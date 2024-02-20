@@ -15,19 +15,19 @@ router.post('/', (req, res) => {
                 fetch(`https://api.openweathermap.org/data/2.5/weather?q=${req.body.cityName}&appid=${API_KEY}&units=metric`)
                     .then(response => response.json())
                     .then(apiData => {
-                        // Creates new document with weather data
+                        console.log(apiData.main.temp);
                         const newCity = new City({
                             cityName: req.body.cityName,
                             main: apiData.weather[0].main,
                             description: apiData.weather[0].description,
-                            temperature: Math.floor(apiData.main.temp),
+                            temperature: apiData.main.temp,
                             tempMin: Math.floor(apiData.main.temp_min),
                             tempMax: Math.floor(apiData.main.temp_max),
                         });
 
                         // Finally save in database
                         newCity.save().then(newDoc => {
-                            res.json({ result: true, weather: newDoc });
+                            res.json({ result: true, apiData: newDoc });
                         });
                     });
             } else {
@@ -45,7 +45,7 @@ router.post('/', (req, res) => {
                     cityName: apiData.name,
                     main: apiData.weather[0].main,
                     description: apiData.weather[0].description,
-                    temperature: apiData.main.temp,
+                    temp: apiData.main.temp,
                     tempMin: apiData.main.temp_min,
                     tempMax: apiData.main.temp_max,
                 });
