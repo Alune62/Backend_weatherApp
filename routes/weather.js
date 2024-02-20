@@ -44,6 +44,7 @@ router.post('/', (req, res) => {
                     cityName: apiData.name,
                     main: apiData.weather[0].main,
                     description: apiData.weather[0].description,
+                    temperature: apiData.main.temp,
                     tempMin: apiData.main.temp_min,
                     tempMax: apiData.main.temp_max,
                 });
