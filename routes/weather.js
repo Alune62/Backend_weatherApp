@@ -20,14 +20,14 @@ router.post('/', (req, res) => {
                             cityName: req.body.cityName,
                             main: apiData.weather[0].main,
                             description: apiData.weather[0].description,
-                            temperature: Math.floor(apiData.main.temp),
+                            temperature: apiData.main.temp,
                             tempMin: Math.floor(apiData.main.temp_min),
                             tempMax: Math.floor(apiData.main.temp_max),
                         });
 
                         // Finally save in database
                         newCity.save().then(newDoc => {
-                            res.json({ result: true, apiData: newDoc });
+                            res.json({ result: true, weather: newDoc });
                         });
                     });
             } else {
