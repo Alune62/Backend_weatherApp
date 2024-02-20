@@ -65,6 +65,7 @@ router.get('/', (req, res) => {
     });
 });
 
+// Get weather data based on user's location
 router.get("/location", (req, res) => {
     if (req.query.latitude && req.query.longitude) {
         // Request OpenWeatherMap API for weather data using coordinates
