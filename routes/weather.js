@@ -20,8 +20,8 @@ router.post('/', (req, res) => {
                             cityName: req.body.cityName,
                             main: apiData.weather[0].main,
                             description: apiData.weather[0].description,
-                            tempMin: apiData.main.temp_min,
-                            tempMax: apiData.main.temp_max,
+                            tempMin: Math.floor(apiData.main.temp_min),
+                            tempMax: Math.floor(apiData.main.temp_max),
                         });
 
                         // Finally save in database
