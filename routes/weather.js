@@ -13,23 +13,24 @@ router.post('/', (req, res) => {
             if (dbData === null) {
                 // Request OpenWeatherMap API for weather data using city name
                 fetch(`https://api.openweathermap.org/data/2.5/weather?q=${req.body.cityName}&appid=${API_KEY}&units=metric`)
-                    .then(response => response.json())
-                    .then(apiData => {
-                        console.log(apiData.main.temp);
-                        const newCity = new City({
-                            cityName: req.body.cityName,
-                            main: apiData.weather[0].main,
-                            description: apiData.weather[0].description,
-                            temperature: apiData.main.temp,
-                            tempMin: Math.floor(apiData.main.temp_min),
-                            tempMax: Math.floor(apiData.main.temp_max),
-                        });
-
-                        // Finally save in database
-                        newCity.save().then(newDoc => {
-                            res.json({ result: true, weather: newDoc });
-                        });
+                .then(response => response.json())
+                .then(apiData => {
+                    console.log(apiData.main.temp);
+                    const newCity = new City({
+                        cityName: req.body.cityName,
+                        main: apiData.weather[0].main,
+                        description: apiData.weather[0].description,
+                        temp: apiData.main.temp, // Correctly accessing temperature
+                        tempMin: Math.floor(apiData.main.temp_min),
+                        tempMax: Math.floor(apiData.main.temp_max),
                     });
+            
+                    // Finally save in database
+                    newCity.save().then(newDoc => {
+                        res.json({ result: true, weather: newDoc });
+                    });
+                });
+            
             } else {
                 // City already exists in database
                 res.json({ result: false, error: 'City already saved' });
