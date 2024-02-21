@@ -15,12 +15,12 @@ router.post('/', (req, res) => {
                 fetch(`https://api.openweathermap.org/data/2.5/weather?q=${req.body.cityName}&appid=${API_KEY}&units=metric`)
                 .then(response => response.json())
                 .then(apiData => {
-                    console.log(apiData.main.temp);
+                    console.log(apiData);
                     const newCity = new City({
                         cityName: req.body.cityName,
                         main: apiData.weather[0].main,
                         description: apiData.weather[0].description,
-                        temp: apiData.main.temp, // Correctly accessing temperature
+                        temp: Math.floor(apiData.main.temp), 
                         tempMin: Math.floor(apiData.main.temp_min),
                         tempMax: Math.floor(apiData.main.temp_max),
                     });
