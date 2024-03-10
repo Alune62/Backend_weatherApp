@@ -4,8 +4,7 @@ var router = express.Router();
 const fetch = require('node-fetch');
 const City = require('../models/cities');
 
-API_KEY= process.env.OWM_API_KEY
-
+API_KEY = process.env.OWM_API_KEY;
 router.post('/', (req, res) => {
     if (req.body.cityName) {
         // Check if the city has not already been added
@@ -13,54 +12,40 @@ router.post('/', (req, res) => {
             if (dbData === null) {
                 // Request OpenWeatherMap API for weather data using city name
                 fetch(`https://api.openweathermap.org/data/2.5/weather?q=${req.body.cityName}&appid=${API_KEY}&units=metric`)
-                .then(response => response.json())
-                .then(apiData => {
-                    console.log(apiData);
-                    const newCity = new City({
-                        cityName: req.body.cityName,
-                        main: apiData.weather[0].main,
-                        description: apiData.weather[0].description,
-                        temp: Math.floor(apiData.main.temp), 
-                        tempMin: Math.floor(apiData.main.temp_min),
-                        tempMax: Math.floor(apiData.main.temp_max),
+                    .then(response => response.json())
+                    .then(apiData => {
+                        // Handle weather data retrieval
+                        // Save new city to the database
+                        const newCity = new City({
+                            cityName: req.body.cityName,
+                            main: apiData.weather[0].main,
+                            description: apiData.weather[0].description,
+                            temp: Math.floor(apiData.main.temp), // Include temperature
+                            tempMin: Math.floor(apiData.main.temp_min),
+                            tempMax: Math.floor(apiData.main.temp_max),
+                        });
+
+                        newCity.save().then(() => {
+                            // Respond with the newly added city data, including temperature
+                            res.json({ result: true, weather: newCity });
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Error fetching weather data or saving city:", error);
+                        res.status(500).json({ result: false, error: "Error fetching weather data or saving city" });
                     });
-            
-                    // Finally save in database
-                    newCity.save().then(newDoc => {
-                        res.json({ result: true, weather: newDoc });
-                    });
-                });
-            
             } else {
                 // City already exists in database
                 res.json({ result: false, error: 'City already saved' });
             }
         });
-    } else if (req.body.latitude && req.body.longitude) {
-        // Request OpenWeatherMap API for weather data using coordinates
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${req.body.latitude}&lon=${req.body.longitude}&appid=${API_KEY}&units=metric`)
-            .then(response => response.json())
-            .then(apiData => {
-                // Creates new document with weather data
-                const newCity = new City({
-                    cityName: apiData.name,
-                    main: apiData.weather[0].main,
-                    description: apiData.weather[0].description,
-                    temp: apiData.main.temp,
-                    tempMin: apiData.main.temp_min,
-                    tempMax: apiData.main.temp_max,
-                });
-
-                // Finally save in database
-                newCity.save().then(newDoc => {
-                    res.json({ result: true, weather: newDoc });
-                });
-            });
     } else {
         // Invalid request
         res.status(400).json({ result: false, error: 'Invalid request' });
     }
 });
+
+
 
 router.get('/', (req, res) => {
     City.find().then(data => {
