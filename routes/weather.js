@@ -12,15 +12,16 @@ router.post('/', (req, res) => {
             if (dbData === null) {
                 // Request OpenWeatherMap API for weather data using city name
                 fetch(`https://api.openweathermap.org/data/2.5/weather?q=${req.body.cityName}&appid=${API_KEY}&units=metric`)
-                    .then(response => response.json())
+                    .then(response =>console.log(response.json()))
                     .then(apiData => {
+                        console.log(apiData);
                         // Handle weather data retrieval
                         // Save new city to the database
                         const newCity = new City({
                             cityName: req.body.cityName,
                             main: apiData.weather[0].main,
                             description: apiData.weather[0].description,
-                            temp: Math.floor(apiData.main.temp), // Include temperature
+                            temperature: Math.floor(apiData.main.temp), // Include temperature
                             tempMin: Math.floor(apiData.main.temp_min),
                             tempMax: Math.floor(apiData.main.temp_max),
                         });

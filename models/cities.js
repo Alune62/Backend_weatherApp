@@ -5,7 +5,7 @@ const citySchema = new Schema({
   cityName: String,
   main: String,
   description: String,
-  temp: Number, // Modifier le nom du champ temperature en temp
+  temp: Number, 
   tempMin: Number,
   tempMax: Number,
 });
