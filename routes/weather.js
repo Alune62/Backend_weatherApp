@@ -4,47 +4,41 @@ var router = express.Router();
 const fetch = require('node-fetch');
 const City = require('../models/cities');
 
-API_KEY = process.env.OWM_API_KEY;
-router.post('/', (req, res) => {
-    if (req.body.cityName) {
-        // Check if the city has not already been added
-        City.findOne({ cityName: { $regex: new RegExp(req.body.cityName, 'i') } }).then(dbData => {
-            if (dbData === null) {
-                // Request OpenWeatherMap API for weather data using city name
-                fetch(`https://api.openweathermap.org/data/2.5/weather?q=${req.body.cityName}&appid=${API_KEY}&units=metric`)
-                    .then(response =>console.log(response.json()))
-                    .then(apiData => {
-                        console.log(apiData);
-                        // Handle weather data retrieval
-                        // Save new city to the database
-                        const newCity = new City({
-                            cityName: req.body.cityName,
-                            main: apiData.weather[0].main,
-                            description: apiData.weather[0].description,
-                            temperature: Math.floor(apiData.main.temp), // Include temperature
-                            tempMin: Math.floor(apiData.main.temp_min),
-                            tempMax: Math.floor(apiData.main.temp_max),
-                        });
+const API_KEY = process.env.OWM_API_KEY;
 
-                        newCity.save().then(() => {
-                            // Respond with the newly added city data, including temperature
-                            res.json({ result: true, weather: newCity });
-                        });
-                    })
-                    .catch(error => {
-                        console.error("Error fetching weather data or saving city:", error);
-                        res.status(500).json({ result: false, error: "Error fetching weather data or saving city" });
-                    });
-            } else {
-                // City already exists in database
-                res.json({ result: false, error: 'City already saved' });
-            }
-        });
-    } else {
-        // Invalid request
-        res.status(400).json({ result: false, error: 'Invalid request' });
+router.post('/', async (req, res) => {
+  if (!req.body.cityName) {
+    return res.status(400).json({ result: false, error: 'Invalid request' });
+  }
+
+  try {
+    const existingCity = await City.findOne({ cityName: { $regex: new RegExp(req.body.cityName, 'i') } });
+
+    if (existingCity) {
+      return res.json({ result: false, error: 'City already saved' });
     }
+
+    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${req.body.cityName}&appid=${API_KEY}&units=metric`);
+    const apiData = await response.json();
+
+    const newCity = new City({
+      cityName: req.body.cityName,
+      main: apiData.weather[0].main,
+      description: apiData.weather[0].description,
+      temp: Math.floor(apiData.main.temp),
+      tempMin: Math.floor(apiData.main.temp_min),
+      tempMax: Math.floor(apiData.main.temp_max),
+    });
+
+    await newCity.save();
+
+    res.json({ result: true, weather: newCity });
+  } catch (error) {
+    console.error("Error fetching weather data or saving city:", error);
+    res.status(500).json({ result: false, error: "Error fetching weather data or saving city" });
+  }
 });
+
 
 
 
