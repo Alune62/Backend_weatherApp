@@ -14,5 +14,27 @@ router.get('/', async (req, res) => {
     }
   });
 
+  // Get weather data based on user's location
+router.get('/location', async (req, res) => {
+  const { lat, lon, cityName } = req.query;
+  const API_KEY = process.env.OWM_API_KEY; // Remplacez par votre clé API OpenWeatherMap
+
+  try {
+    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
+    const data = await response.json();
+    const userLocation = {
+      cityName: cityName,
+      main: data.weather[0].main,
+      description: data.weather[0].description,
+      temp: Math.floor(data.main.temp - 273.15),
+      tempMin: Math.floor(data.main.temp_min - 273.15),
+      tempMax: Math.floor(data.main.temp_max - 273.15),
+    };
+    res.json({ result: true, weather: userLocation });
+  } catch (error) {
+    console.error("Error fetching weather data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
   module.exports = router;
