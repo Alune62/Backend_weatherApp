@@ -29,18 +29,13 @@ router.post('/', async (req, res) => {
       tempMin: Math.floor(apiData.main.temp_min),
       tempMax: Math.floor(apiData.main.temp_max),
     });
-
     await newCity.save();
-
     res.json({ result: true, weather: newCity });
   } catch (error) {
     console.error("Error fetching weather data or saving city:", error);
     res.status(500).json({ result: false, error: "Error fetching weather data or saving city" });
   }
 });
-
-
-
 
 router.get('/', (req, res) => {
     City.find().then(data => {
@@ -49,19 +44,19 @@ router.get('/', (req, res) => {
 });
 
 // Get weather data based on user's location
-router.get("/location", (req, res) => {
-    if (req.query.latitude && req.query.longitude) {
-        // Request OpenWeatherMap API for weather data using coordinates
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${req.query.latitude}&lon=${req.query.longitude}&appid=${API_KEY}&units=metric`)
-            .then(response => response.json())
-            .then(apiData => {
-                res.json({ result: true, weather: apiData });
-            });
-    } else {
-        // Invalid request
-        res.status(400).json({ result: false, error: 'Invalid request' });
+app.get('/location', async (req, res) => {
+    const { lat, lon } = req.query;
+    const API_KEY = 'Votre_API_Key'; // Remplacez par votre clé API OpenWeatherMap
+  
+    try {
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+      res.status(500).json({ error: "Internal Server Error" });
     }
-});
+  });
 
 router.get("/:cityName", (req, res) => {
     City.findOne({
